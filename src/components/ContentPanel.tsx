@@ -1,8 +1,22 @@
-import { useGameStore } from '../store/gameStore'
+import { COUNTER_MAX_PICKS, useGameStore, type CurrentRound } from '../store/gameStore'
 import { useStatsStore } from '../store/statsStore'
+import { D3DefinitionCard } from './D3DefinitionCard'
 import { IncidentReport } from './IncidentReport'
 import { ProcedureCard } from './ProcedureCard'
 import { ResultBar } from './ResultBar'
+
+function RoundCard({ current }: { current: CurrentRound }) {
+  switch (current.kind) {
+    case 'drill':
+      return <ProcedureCard item={current.item} />
+    case 'incident':
+      return <IncidentReport incident={current.incident} />
+    case 'd3drill':
+      return <D3DefinitionCard item={current.item} />
+    case 'counter':
+      return <ProcedureCard item={current.item} directive="select 3–6 D3FEND countermeasures" />
+  }
+}
 
 export function ContentPanel() {
   const phase = useGameStore((s) => s.phase)
@@ -13,15 +27,18 @@ export function ContentPanel() {
   const giveUp = useGameStore((s) => s.giveUp)
   const clearSelection = useGameStore((s) => s.clearSelection)
   const loadError = useGameStore((s) => s.loadError)
+  const d3LoadError = useGameStore((s) => s.d3LoadError)
   const mode = useGameStore((s) => s.mode)
   const difficulty = useStatsStore((s) => s.difficulty)
   const setDifficulty = useStatsStore((s) => s.setDifficulty)
+  const isD3 = mode === 'd3drill' || mode === 'counter'
 
-  if (loadError) {
+  if (loadError || (isD3 && d3LoadError)) {
     return (
       <div className="content-panel">
         <div className="panel-message error">
-          Failed to load dataset: {loadError}. Run <code>npm run update-data</code> and reload.
+          Failed to load dataset: {loadError ?? d3LoadError}. Run{' '}
+          <code>{loadError ? 'npm run update-data' : 'npm run update-d3fend'}</code> and reload.
         </div>
       </div>
     )
@@ -31,7 +48,8 @@ export function ContentPanel() {
     return (
       <div className="content-panel">
         <div className="panel-message">
-          <span className="loading-pulse">▮▮▮</span> loading procedure intelligence…
+          <span className="loading-pulse">▮▮▮</span>{' '}
+          {isD3 ? 'loading defensive intelligence…' : 'loading procedure intelligence…'}
         </div>
       </div>
     )
@@ -39,16 +57,20 @@ export function ContentPanel() {
 
   return (
     <div className="content-panel">
-      {current.kind === 'drill' ? (
-        <ProcedureCard item={current.item} />
-      ) : (
-        <IncidentReport incident={current.incident} />
-      )}
+      <RoundCard current={current} />
 
       {phase === 'answering' ? (
         <div className="action-bar">
           <span className="selection-readout">
-            <strong>{selectedCount}</strong> selected
+            {mode === 'counter' ? (
+              <>
+                <strong>{selectedCount}</strong>/{COUNTER_MAX_PICKS} selected · best scored at 3+
+              </>
+            ) : (
+              <>
+                <strong>{selectedCount}</strong> selected
+              </>
+            )}
           </span>
           {mode === 'incident' && (
             <button

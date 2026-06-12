@@ -1,11 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
-import { COLUMN_TECHNIQUES, TACTICS } from '../data/attack'
 import { useGameStore } from '../store/gameStore'
-import type { Tactic } from '../types'
+import type { Tactic, Technique } from '../types'
 import { TechniqueCell } from './TechniqueCell'
 
-function TacticColumn({ tactic, filter }: { tactic: Tactic; filter: string }) {
-  const techniques = COLUMN_TECHNIQUES.get(tactic.shortname) ?? []
+interface BoardData {
+  title: string
+  tactics: Tactic[]
+  columns: Map<string, Technique[]>
+  subsOf: Map<string, Technique[]>
+}
+
+function TacticColumn({
+  tactic,
+  techniques,
+  subsOf,
+  filter,
+}: {
+  tactic: Tactic
+  techniques: Technique[]
+  subsOf: Map<string, Technique[]>
+  filter: string
+}) {
   const selectedInColumn = useGameStore(
     (s) => techniques.filter((t) => s.selected.has(t.id)).length,
   )
@@ -21,14 +36,14 @@ function TacticColumn({ tactic, filter }: { tactic: Tactic; filter: string }) {
       </div>
       <div className="tactic-cells">
         {techniques.map((t) => (
-          <TechniqueCell key={t.id} tech={t} filter={filter} />
+          <TechniqueCell key={t.id} tech={t} subs={subsOf.get(t.id) ?? []} filter={filter} />
         ))}
       </div>
     </div>
   )
 }
 
-export function MatrixBoard() {
+export function MatrixBoard({ title, tactics, columns, subsOf }: BoardData) {
   const [filter, setFilter] = useState('')
   const result = useGameStore((s) => s.result)
   const boardRef = useRef<HTMLDivElement>(null)
@@ -43,7 +58,7 @@ export function MatrixBoard() {
   return (
     <section className="matrix-section">
       <div className="matrix-toolbar">
-        <h2 className="matrix-title">Enterprise Matrix</h2>
+        <h2 className="matrix-title">{title}</h2>
         <div className="legend">
           <span className="legend-item legend-selected">selected</span>
           <span className="legend-item legend-hit">hit</span>
@@ -61,8 +76,14 @@ export function MatrixBoard() {
         />
       </div>
       <div className="matrix-board" ref={boardRef}>
-        {TACTICS.map((tac) => (
-          <TacticColumn key={tac.id} tactic={tac} filter={filter.trim().toLowerCase()} />
+        {tactics.map((tac) => (
+          <TacticColumn
+            key={tac.id}
+            tactic={tac}
+            techniques={columns.get(tac.shortname) ?? []}
+            subsOf={subsOf}
+            filter={filter.trim().toLowerCase()}
+          />
         ))}
       </div>
     </section>

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "update-data": "node scripts/update-data.mjs"
+    "update-data": "node scripts/update-data.mjs",
+    "update-d3fend": "node scripts/update-d3fend.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

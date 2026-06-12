@@ -9,6 +9,12 @@ export interface Technique {
   name: string
   tactics: string[]
   parent: string | null
+  /** D3FEND only: website class name, e.g. "DecoyFile" */
+  uri?: string
+  /** D3FEND only: top-level base technique rendered as a group-header row */
+  base?: boolean
+  /** D3FEND only: the board row this deep sub-technique renders under */
+  row?: string
 }
 
 export type SourceKind = 'group' | 'software' | 'campaign'
@@ -19,6 +25,13 @@ export interface ProcedureItem {
   a: string[]
   s: string
   k: SourceKind
+}
+
+/** D3FEND definition-drill item: redacted definition text + the technique it describes. */
+export interface D3DrillItem {
+  i: number
+  t: string
+  a: string[]
 }
 
 export interface GroupInfo {
@@ -52,9 +65,12 @@ export interface ScoreResult {
   /** technique id -> verdict, for matrix coloring */
   verdicts: Record<string, Verdict>
   gaveUp: boolean
+  /** counter mode only: mapped countermeasures the user did not pick — painted
+   *  as missed on the board but excluded from `missed` so stats stay sane */
+  coverage?: string[]
 }
 
-export type Mode = 'drill' | 'incident' | 'stats'
+export type Mode = 'drill' | 'incident' | 'd3drill' | 'counter' | 'stats'
 export type Phase = 'loading' | 'answering' | 'revealed'
 
 export interface TechStat {

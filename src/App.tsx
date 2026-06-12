@@ -3,6 +3,8 @@ import { ContentPanel } from './components/ContentPanel'
 import { HeaderBar } from './components/HeaderBar'
 import { MatrixBoard } from './components/MatrixBoard'
 import { StatsView } from './components/StatsView'
+import { COLUMN_TECHNIQUES, SUBS_OF, TACTICS } from './data/attack'
+import { D3_COLUMN_ROWS, D3_SUBS_OF, D3_TACTICS } from './data/d3fend'
 import { useGameStore } from './store/gameStore'
 
 export default function App() {
@@ -29,6 +31,8 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const isD3 = mode === 'd3drill' || mode === 'counter'
+
   return (
     <div className="app">
       <HeaderBar />
@@ -37,13 +41,26 @@ export default function App() {
       ) : (
         <main className="game-layout">
           <ContentPanel />
-          <MatrixBoard />
+          {isD3 ? (
+            <MatrixBoard
+              title="D3FEND Matrix"
+              tactics={D3_TACTICS}
+              columns={D3_COLUMN_ROWS}
+              subsOf={D3_SUBS_OF}
+            />
+          ) : (
+            <MatrixBoard
+              title="Enterprise Matrix"
+              tactics={TACTICS}
+              columns={COLUMN_TECHNIQUES}
+              subsOf={SUBS_OF}
+            />
+          )}
         </main>
       )}
       <footer className="app-footer">
         <span>
-          ATT&CK® content © MITRE — data from the official STIX bundle · refresh with{' '}
-          <code>npm run update-data</code>
+          ATT&CK® and D3FEND™ content © MITRE
         </span>
         <span>⏎ submit / next · esc clear</span>
       </footer>

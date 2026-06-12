@@ -3,7 +3,7 @@ import { RedactedText } from './RedactedText'
 
 const KIND_LABEL = { group: 'threat group', software: 'software', campaign: 'campaign' }
 
-export function ProcedureCard({ item }: { item: ProcedureItem }) {
+export function ProcedureCard({ item, directive }: { item: ProcedureItem; directive?: string }) {
   return (
     <article className="procedure-card" key={item.i}>
       <div className="doc-strip">
@@ -16,7 +16,7 @@ export function ProcedureCard({ item }: { item: ProcedureItem }) {
           {KIND_LABEL[item.k]}: <strong>{item.s}</strong>
         </span>
         <span className="target-count">
-          map {item.a.length} technique{item.a.length > 1 ? 's' : ''}
+          {directive ?? `map ${item.a.length} technique${item.a.length > 1 ? 's' : ''}`}
         </span>
       </div>
       <p className="procedure-text">

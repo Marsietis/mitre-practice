@@ -1,11 +1,13 @@
 import { memo } from 'react'
-import { SUBS_OF } from '../data/attack'
 import { useGameStore } from '../store/gameStore'
 import type { Technique } from '../types'
 
 function matches(t: Technique, filter: string): boolean {
   return t.name.toLowerCase().includes(filter) || t.id.toLowerCase().includes(filter)
 }
+
+/** Short display id for a sub row: the suffix for ATT&CK subs, the full id otherwise. */
+const subDisplayId = (tid: string) => (tid.includes('.') ? tid.split('.')[1] : tid)
 
 function SubRow({ sub, filter }: { sub: Technique; filter: string }) {
   const selected = useGameStore((s) => s.selected.has(sub.id))
@@ -24,7 +26,7 @@ function SubRow({ sub, filter }: { sub: Technique; filter: string }) {
       data-verdict={verdict}
       onClick={() => toggle(sub.id)}
     >
-      <span className="cell-tid">{sub.id.split('.')[1]}</span>
+      <span className="cell-tid">{subDisplayId(sub.id)}</span>
       <span className="cell-name">{sub.name}</span>
     </button>
   )
@@ -32,9 +34,11 @@ function SubRow({ sub, filter }: { sub: Technique; filter: string }) {
 
 export const TechniqueCell = memo(function TechniqueCell({
   tech,
+  subs,
   filter,
 }: {
   tech: Technique
+  subs: Technique[]
   filter: string
 }) {
   const selected = useGameStore((s) => s.selected.has(tech.id))
@@ -43,7 +47,6 @@ export const TechniqueCell = memo(function TechniqueCell({
   const toggle = useGameStore((s) => s.toggleTechnique)
   const toggleExpand = useGameStore((s) => s.toggleExpand)
 
-  const subs = SUBS_OF.get(tech.id) ?? []
   const subMatch = filter !== '' && subs.some((s) => matches(s, filter))
   const dim = filter !== '' && !matches(tech, filter) && !subMatch
   const multiTactic = tech.tactics.length > 1
@@ -53,6 +56,7 @@ export const TechniqueCell = memo(function TechniqueCell({
       <div
         className={[
           'cell parent-cell',
+          tech.base ? 'cell-base' : '',
           selected ? 'cell-selected' : '',
           verdict ? `cell-${verdict}` : '',
           dim ? 'cell-dim' : '',

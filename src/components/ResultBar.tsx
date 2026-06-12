@@ -1,4 +1,4 @@
-import { TECH_MAP, techniqueUrl } from '../data/attack'
+import { lookupTech, studyUrl } from '../data/d3fend'
 import { useGameStore } from '../store/gameStore'
 import type { ScoreResult, Verdict } from '../types'
 
@@ -11,8 +11,9 @@ const VERDICT_LABEL: Record<Verdict, string> = {
 }
 
 function AnswerRow({ tid, verdict }: { tid: string; verdict: Verdict }) {
-  const tech = TECH_MAP.get(tid)
+  const tech = lookupTech(tid)
   if (!tech) return null
+  const site = tid.startsWith('T') ? 'attack.mitre.org' : 'd3fend.mitre.org'
   return (
     <li className={`answer-row answer-${verdict}`}>
       <span className="answer-verdict">{VERDICT_LABEL[verdict]}</span>
@@ -20,12 +21,12 @@ function AnswerRow({ tid, verdict }: { tid: string; verdict: Verdict }) {
       <span className="answer-name">{tech.name}</span>
       <a
         className="answer-link"
-        href={techniqueUrl(tid)}
+        href={studyUrl(tid)}
         target="_blank"
         rel="noreferrer"
-        title="Open on attack.mitre.org"
+        title={`Open on ${site}`}
       >
-        attack.mitre.org ↗
+        {site} ↗
       </a>
     </li>
   )
@@ -69,6 +70,12 @@ export function ResultBar({ result }: { result: ScoreResult }) {
               <AnswerRow key={r.tid} tid={r.tid} verdict={r.verdict} />
             ))}
           </ul>
+          {result.coverage && result.coverage.length > 0 && (
+            <p className="coverage-note">
+              +{result.coverage.length} more mapped countermeasure
+              {result.coverage.length > 1 ? 's' : ''} highlighted on the matrix
+            </p>
+          )}
         </div>
         {result.wrong.length > 0 && (
           <div className="result-col">
@@ -84,7 +91,7 @@ export function ResultBar({ result }: { result: ScoreResult }) {
           <p className="partial-note">
             Partial credit: you selected{' '}
             {result.partials
-              .map((p) => `${p.selected} ${TECH_MAP.get(p.selected)?.parent ? '(sub)' : '(parent)'} for ${p.answer}`)
+              .map((p) => `${p.selected} ${lookupTech(p.selected)?.parent ? '(sub)' : '(parent)'} for ${p.answer}`)
               .join('; ')}
             .
           </p>

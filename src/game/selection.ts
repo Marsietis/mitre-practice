@@ -13,12 +13,12 @@ export function techniqueWeight(stats: Record<string, TechStat>, tid: string): n
 
 const RECENT_PENALTY = 0.05
 
-export function pickDrillItem(
-  items: ProcedureItem[],
+export function pickDrillItem<T extends { i: number; a: string[] }>(
+  items: T[],
   stats: Record<string, TechStat>,
   recentIds: number[],
   rng: Rng,
-): ProcedureItem {
+): T {
   const recent = new Set(recentIds)
   const weights = items.map((item) => {
     let w = 0
@@ -26,6 +26,27 @@ export function pickDrillItem(
     return recent.has(item.i) ? w * RECENT_PENALTY : w
   })
   return pickWeighted(items, weights, rng)
+}
+
+export interface CounterCandidate {
+  item: ProcedureItem
+  mapped: string[]
+}
+
+/** Pick a counter-mode procedure, weighted toward weak defensive techniques. */
+export function pickCounterItem(
+  pool: CounterCandidate[],
+  stats: Record<string, TechStat>,
+  recentIds: number[],
+  rng: Rng,
+): CounterCandidate {
+  const recent = new Set(recentIds)
+  const weights = pool.map(({ item, mapped }) => {
+    let w = 0
+    for (const did of mapped) w = Math.max(w, techniqueWeight(stats, did))
+    return recent.has(item.i) ? w * RECENT_PENALTY : w
+  })
+  return pickWeighted(pool, weights, rng)
 }
 
 export function pickGroup(

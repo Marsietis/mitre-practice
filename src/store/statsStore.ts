@@ -13,9 +13,11 @@ interface StatsState {
   totalAnswered: number
   totalPerfect: number
   recentItemIds: number[]
+  recentD3ItemIds: number[]
   difficulty: 'easy' | 'hard'
   recordResult: (result: ScoreResult, mode: Mode) => void
   rememberItem: (itemId: number) => void
+  rememberD3Item: (itemId: number) => void
   setDifficulty: (d: 'easy' | 'hard') => void
   resetAll: () => void
 }
@@ -29,6 +31,7 @@ export const useStatsStore = create<StatsState>()(
       totalAnswered: 0,
       totalPerfect: 0,
       recentItemIds: [],
+      recentD3ItemIds: [],
       difficulty: 'hard',
 
       recordResult: (result, mode) => {
@@ -53,6 +56,9 @@ export const useStatsStore = create<StatsState>()(
       rememberItem: (itemId) =>
         set({ recentItemIds: [...get().recentItemIds, itemId].slice(-RECENT_MAX) }),
 
+      rememberD3Item: (itemId) =>
+        set({ recentD3ItemIds: [...get().recentD3ItemIds, itemId].slice(-RECENT_MAX) }),
+
       setDifficulty: (difficulty) => set({ difficulty }),
 
       resetAll: () =>
@@ -63,6 +69,7 @@ export const useStatsStore = create<StatsState>()(
           totalAnswered: 0,
           totalPerfect: 0,
           recentItemIds: [],
+          recentD3ItemIds: [],
         }),
     }),
     { name: 'mitre-practice-v1', version: 1 },
